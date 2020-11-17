@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 
@@ -6,33 +7,57 @@ namespace Checkpoint_17112020
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            SqlConnectionStringBuilder stringBuilder = new SqlConnectionStringBuilder();
-            stringBuilder.InitialCatalog = "Campus";
-            stringBuilder.DataSource = @"LOCALHOST\SQLEXPRESS";
-            stringBuilder.IntegratedSecurity = true;
-            DataAbstractionLayer.Connect(stringBuilder);
-
-            Console.WriteLine("Afficher la liste de tous les étudiants du campus :");
-            foreach (Student student in DataAbstractionLayer.SelectAllStudents())
+            using (var context = new CampusContext())
             {
-                Console.WriteLine(student.StudentId + " - " + student.LastName + " " + student.FirstName);
-            }
+                context.Database.EnsureDeleted();
 
-            Console.WriteLine("Afficher un étudiant en fonction de son nom de famille :");
-            foreach (Student student in DataAbstractionLayer.SelectStudentByLastname("Balboa"))
-            {
-                Console.WriteLine(student.StudentId + " - " + student.LastName + " " + student.FirstName);
-            }
+                context.Database.EnsureCreated();
 
-            Console.WriteLine("Afficher la liste de tous les étudiants du campus avec leur moyenne :");
-            foreach (Student student in DataAbstractionLayer.SelectAllStudentsV2())
-            {
-                Console.WriteLine(student.LastName + " " + student.FirstName + " - Moyenne : " + Math.Round(student.Average,2)+"/20");
-            }
+                var promotion1 = new Promotion
+                {
+                    Name = "Javascrip"
+                };
 
-            DataAbstractionLayer.Disconnect();
+                promotion1.Students = new List<Student>
+                {
+                    new Student { Lastname = "BOND", Firstname = "James" },
+                    new Student { Lastname = "BALBOA", Firstname = "Rocky" },
+                    new Student { Lastname = "INGALLS", Firstname = "Laura" },
+                    new Student { Lastname = "CONNOR", Firstname = "Sarah" },
+                    new Student { Lastname = "PAN", Firstname = "Peter" },
+                };
+
+                context.Add(promotion1);
+
+                var promotion2 = new Promotion
+                {
+                    Name = "CSharp"
+                };
+
+                promotion2.Students = new List<Student>
+                {
+                    new Student { Lastname = "KENT", Firstname = "Clark" },
+                    new Student { Lastname = "PARKER", Firstname = "Peter" },
+                    new Student { Lastname = "WIDOW", Firstname = "Black" },
+                    new Student { Lastname = "CROFT", Firstname = "Lara" },
+                    new Student { Lastname = "HOLMES", Firstname = "Sherlock" },
+                };
+
+                context.Add(promotion2);
+
+                context.SaveChanges();
+
+                foreach (Promotion promotion in context.Promotions.Include(s => s.Students))
+                {
+                    Console.WriteLine("Liste des élèves de la promotion " +promotion.Name + " :");
+                    foreach (Student student in promotion.Students)
+                    {
+                        Console.WriteLine("\t " + student.Lastname + " " + student.Firstname);
+                    }
+                }
+            }
         }
     }
 }

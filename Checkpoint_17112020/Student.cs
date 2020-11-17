@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Checkpoint_17112020
 {
-    public class Student
+    class Student
     {
-        public Int32 StudentId { get; set; }
-        public String LastName { get; set; }
-        public String FirstName { get; set; }
-        public Decimal Average { get; set; }
+        public Guid StudentId { get; set; }
+        public String Lastname { get; set; }
+        public String Firstname { get; set; }
+        public ICollection<Exam> Exams { get; set; }
     }
 }
